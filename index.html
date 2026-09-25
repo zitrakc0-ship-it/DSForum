@@ -4,19 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dark School Forum</title>
-    <!-- Подключаем шрифты Orbitron, JetBrains Mono и иконки FontAwesome -->
+    <!-- Шрифты Orbitron, JetBrains Mono и иконки FontAwesome -->
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cloudflare.com">
     
     <style>
-        /* БАЗОВЫЕ НАСТРОЙКИ СЕТКИ */
         * { margin: 0; padding: 0; box-sizing: border-box; transition: background-color 0.3s, border-color 0.3s; }
         body { background-color: #010202; color: #cbd5cc; font-family: 'JetBrains Mono', monospace; display: flex; overflow-x: hidden; height: 100vh; }
 
         /* 1. АНИМАЦИОННЫЙ ЗАГРУЗЧИК (INTRO LOADER) */
-        #loader-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        #loader-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s ease; }
         .loader-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 3rem; color: #00ff66; letter-spacing: 10px; margin-bottom: 20px; opacity: 0; transform: scale(0.9); animation: loadPulse 2s ease-in-out infinite alternate, fadeScaleIn 1s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
         .loader-bar { width: 250px; height: 2px; background: rgba(0, 255, 102, 0.1); border-radius: 4px; overflow: hidden; }
         .loader-progress { width: 0%; height: 100%; background: linear-gradient(90deg, #00ff66, #00ffcc); box-shadow: 0 0 10px #00ff66; animation: fillBar 2.2s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; }
@@ -39,15 +38,14 @@
         .group-title { font-family: 'Orbitron', sans-serif; font-size: 10px; color: #00441b; text-transform: uppercase; letter-spacing: 2px; padding: 5px 12px; margin-bottom: 8px; }
         
         /* Плавные круглые кнопки меню */
-        .menu-item { display: flex; align-items: center; gap: 15px; color: #88998b; text-decoration: none; padding: 14px 18px; font-size: 14px; font-weight: 500; border-radius: 12px; margin-bottom: 6px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-        .menu-item i { font-size: 16px; width: 20px; text-align: center; color: #384c3e; transition: transform 0.25s; }
+        .menu-item { display: flex; align-items: center; gap: 15px; color: #88998b; text-decoration: none; padding: 14px 18px; font-size: 14px; border-radius: 12px; margin-bottom: 6px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .menu-item i { font-size: 16px; width: 20px; text-align: center; color: #384c3e; }
         .menu-item:hover, .menu-item.active { background-color: rgba(0, 255, 102, 0.05); color: #00ff66; transform: translateX(4px); }
-        .menu-item:hover i, .menu-item.active i { color: #00ff66; transform: scale(1.1); }
+        .menu-item:hover i, .menu-item.active i { color: #00ff66; }
 
         /* Кнопка создания темы */
         .btn-suggest { display: block; width: 100%; background: linear-gradient(135deg, #00ff66 0%, #00dd55 100%); color: #000000; text-align: center; padding: 15px; border-radius: 12px; font-weight: 700; font-size: 14px; margin-top: auto; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(0, 255, 102, 0.15); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .btn-suggest:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(0, 255, 102, 0.35); filter: brightness(1.1); }
-        .btn-suggest:active { transform: translateY(0); }
+        .btn-suggest:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(0, 255, 102, 0.35); }
         /* 4. ГЛАВНЫЕ КОНТЕНТНЫЕ БЛОКИ */
         .main-container { margin-left: 280px; flex-grow: 1; padding: 50px 40px; min-height: 100vh; background: radial-gradient(circle at 50% 10%, #030e06 0%, #010202 70%); position: relative; }
         .forum-section { display: none; width: 100%; max-width: 950px; margin: 0 auto; opacity: 0; transform: translateY(15px); }
@@ -132,7 +130,7 @@
             <div class="auth-logo"><i class="fa-solid fa-key"></i> ACCESS REQUIRED</div>
             <p class="auth-desc">Для обеспечения стопроцентной анонимности форум не хранит паролей. Получите временный сессионный ключ доступа в нашем официальном боте.</p>
             
-            <!-- Ссылка на бота (открывается в новой вкладке) -->
+            <!-- Ссылка на бота -->
             <a href="https://t.me" target="_blank" class="btn-tg">
                 <i class="fa-brands fa-telegram"></i> Получить ключ в Telegram
             </a>
@@ -272,7 +270,6 @@
             <div class="comments-label">Комментарии зашифрованной ветки</div>
             <div class="comments-section" id="openedThreadComments"></div>
 
-            <!-- Форма отправки комментариев внутри топика -->
             <form class="inline-form active" onsubmit="submitComment(event)">
                 <textarea id="commentTextInput" placeholder="Напишите анонимный ответ в этот тред..." required></textarea>
                 <button type="submit" class="btn-submit">Отправить ответ</button>
@@ -310,7 +307,7 @@
         import { initializeApp } from "https://gstatic.com";
         import { getDatabase, ref, push, onChildAdded, get } from "https://gstatic.com";
 
-        // Ваша конфигурация базы данных Dark School
+        // Ваша официальная конфигурация базы данных Dark School
         const firebaseConfig = {
             apiKey: "AIzaSyAkme2yEthTPY1ZDS_ijJzdRMdYmvk3zV4",
             authDomain: "://firebaseapp.com",
@@ -370,7 +367,7 @@
             categoryGrid.style.display = "none";
             postForm.classList.add('active');
         }
-        // ИМИТАЦИЯ ЗАГРУЗКИ И ПЕРЕХОД К АВТОРИЗАЦИИ
+        // АВТОМАТИЧЕСКАЯ УПРАВЛЯЕМАЯ ЗАГРУЗКА ЗАСТАВКИ
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 const loader = document.getElementById('loader-overlay');
@@ -381,43 +378,43 @@
                     authScreen.style.display = 'flex';
                     setTimeout(() => authScreen.style.opacity = '1', 50);
                 }, 600);
-            }, 2500); // 2.5 секунды красивой хакерской полосы загрузки
+            }, 2500); // 2.5 секунды прогрузки хакерского интро
         });
 
-        // ПРОВЕРКА КЛЮЧА ДОСТУПА ЧЕРЕЗ FIREBASE CLOUD
+        // ПРОВЕРКА СЕССИОННОГО КЛЮЧА ИЗ ОБЛАКА FIREBASE (КАТЕГОРИЯ: Keys)
         window.verifyAccessKey = async function() {
             const inputKey = document.getElementById('authKeyInput').value.trim();
             if (!inputKey) { alert('Введите ключ!'); return; }
 
             try {
-                // Проверяем существование ключа в ветке /keys базы данных
-                const snapshot = await get(ref(database, `keys/${inputKey}`));
+                // ИСПРАВЛЕНО: Сверяем ввод с вашей точной структурой папки 'Keys'
+                const snapshot = await get(ref(database, `Keys/${inputKey}`));
                 
                 if (snapshot.exists() && snapshot.val() === true) {
-                    // Ключ валиден — пускаем на форум!
+                    // Ключ верный — плавно открываем шлюзы форума
                     document.getElementById('auth-overlay').style.opacity = '0';
                     setTimeout(() => {
                         document.getElementById('auth-overlay').style.display = 'none';
                         document.getElementById('app-sidebar').style.display = 'flex';
                         document.getElementById('app-main').style.display = 'flex';
-                        switchSection('control'); // Стартовый раздел
+                        switchSection('control'); // Стартовая вкладка контрольных
                     }, 500);
                 } else {
-                    alert('ОШИБКА ДОСТУПА: Ключ не зарегистрирован в базе ядра или его срок истек.');
+                    alert('ОШИБКА РЕГИСТРАЦИИ: Данного ключа нет в базе ядра или его сессия истекла.');
                 }
             } catch (err) {
                 console.error(err);
-                alert('Ошибка соединения с базой ядра.');
+                alert('Критическая ошибка соединения с облаком Dark School.');
             }
         }
 
-        // ОТПРАВКА НОВОГО ТРЕДА В ОБЛАКО
+        // ОТПРАВКА НОВОГО ТРЕДА НА СЕРВЕР (КАТЕГОРИЯ: Threads)
         window.createThread = function(e) {
             e.preventDefault();
             const titleText = document.getElementById('threadTitleInput').value;
             const contentText = document.getElementById('threadContentInput').value;
             
-            push(ref(database, 'threads/' + window.currentTargetId), {
+            push(ref(database, 'Threads/' + window.currentTargetId), {
                 title: titleText,
                 content: contentText,
                 author: "anon_" + Math.floor(1000 + Math.random() * 9000),
@@ -430,21 +427,20 @@
             switchSection(window.currentTargetId);
         }
 
-        // ОТКРЫТИЕ КОНКРЕТНОЙ ТЕМЫ (ПРОСМОТР КОНТЕНТА И КОММЕНТАРИЕВ)
+        // ОТКРЫТИЕ ТЕМЫ (ЧТЕНИЕ ТЕКСТА И КОММЕНТАРИЕВ ДЛЯ ПОЛЬЗОВАТЕЛЯ)
         window.viewThread = function(category, threadId, title, author, content) {
             window.activeThreadId = threadId;
             window.activeCategory = category;
 
             document.getElementById('openedThreadTitle').innerText = title;
-            document.getElementById('openedThreadMeta').innerText = `Ветка: ${category} | Автор: @${author}`;
+            document.getElementById('openedThreadMeta').innerText = `Раздел: ${category.toUpperCase()} | Автор: @${author}`;
             document.getElementById('openedThreadContent').innerText = content;
             
-            // Очищаем и заново подгружаем чат комментариев
             const commentsContainer = document.getElementById('openedThreadComments');
             commentsContainer.innerHTML = "";
 
-            // Слушаем новые комментарии именно для этого треда
-            onChildAdded(ref(database, `comments/${threadId}`), (snapshot) => {
+            // Слушаем новые комментарии к открытому треду в реальном времени
+            onChildAdded(ref(database, `Comments/${threadId}`), (snapshot) => {
                 const comment = snapshot.val();
                 const commentCard = document.createElement('div');
                 commentCard.className = 'comment-card';
@@ -458,17 +454,16 @@
             switchSection('view-thread');
         }
 
-        // НАЗАД ИЗ ПРОСМОТРА ТЕМЫ
         window.closeThreadView = function() {
             switchSection(window.previousSectionId);
         }
 
-        // ОТПРАВКА АНОНИМНОГО КОММЕНТАРИЯ ВНУТРИ ТЕМЫ
+        // АНОНИМНЫЕ ОТВЕТЫ/КОММЕНТАРИИ ВНУТРИ ТРЕДА
         window.submitComment = function(e) {
             e.preventDefault();
             const commentText = document.getElementById('commentTextInput').value;
 
-            push(ref(database, `comments/${window.activeThreadId}`), {
+            push(ref(database, `Comments/${window.activeThreadId}`), {
                 text: commentText,
                 author: "anon_" + Math.floor(1000 + Math.random() * 9000)
             });
@@ -476,15 +471,14 @@
             document.getElementById('commentTextInput').value = "";
         }
 
-        // СИНХРОНИЗАЦИЯ ВСЕХ ВЕТОК И СБОРКА СТИЛЬНЫХ КАРТОЧЕК ДЛЯ ПОЛЬЗОВАТЕЛЕЙ
+        // ЖИВАЯ СИНХРОНИЗАЦИЯ КАРТОЧЕК ДЛЯ ВСЕХ КАТЕГОРИЙ (КАТЕГОРИЯ: Threads)
         const categories = ['control', 'self', 'practice', 'vpr', 'oge', 'ege'];
         categories.forEach(catId => {
-            onChildAdded(ref(database, 'threads/' + catId), (snapshot) => {
+            onChildAdded(ref(database, 'Threads/' + catId), (snapshot) => {
                 const threadId = snapshot.key;
                 const thread = snapshot.val();
                 const container = document.getElementById(`list-${catId}`);
                 
-                // Создаем карточку в стиле премиальных форумов
                 const card = document.createElement('div');
                 card.className = 'thread-card';
                 card.onclick = () => viewThread(catId, threadId, thread.title, thread.author, thread.content);
@@ -510,3 +504,4 @@
     </script>
 </body>
 </html>
+
