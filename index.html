@@ -41,15 +41,14 @@
         .menu-group { margin-bottom: 25px; }
         .group-title { font-family: 'Orbitron', sans-serif; font-size: 10px; color: #00441b; text-transform: uppercase; letter-spacing: 2px; padding: 5px 12px; margin-bottom: 8px; }
  
-        /* Плавные круглые кнопки меню */
         .menu-item { display: flex; align-items: center; gap: 15px; color: #88998b; text-decoration: none; padding: 14px 18px; font-size: 14px; border-radius: 12px; margin-bottom: 6px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
         .menu-item i { font-size: 16px; width: 20px; text-align: center; color: #384c3e; }
         .menu-item:hover, .menu-item.active { background-color: rgba(0, 255, 102, 0.05); color: #00ff66; transform: translateX(4px); }
         .menu-item:hover i, .menu-item.active i { color: #00ff66; }
  
-        /* Кнопка создания темы */
         .btn-suggest { display: block; width: 100%; background: linear-gradient(135deg, #00ff66 0%, #00dd55 100%); color: #000000; text-align: center; padding: 15px; border-radius: 12px; font-weight: 700; font-size: 14px; margin-top: auto; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(0, 255, 102, 0.15); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .btn-suggest:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(0, 255, 102, 0.35); }
+ 
         /* 4. ГЛАВНЫЕ КОНТЕНТНЫЕ БЛОКИ */
         .main-container { margin-left: 280px; flex-grow: 1; padding: 50px 40px; min-height: 100vh; background: radial-gradient(circle at 50% 10%, #030e06 0%, #010202 70%); position: relative; }
         .forum-section { display: none; width: 100%; max-width: 950px; margin: 0 auto; opacity: 0; transform: translateY(15px); }
@@ -60,7 +59,6 @@
         .btn-back { background: none; border: 1px solid #1f3325; color: #88998b; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 500; }
         .btn-back:hover { border-color: #00ff66; color: #00ff66; background: rgba(0, 255, 102, 0.03); }
  
-        /* СПИСОК СТИЛЬНЫХ КАРТОЧЕК */
         .threads-list { display: flex; flex-direction: column; gap: 12px; width: 100%; }
         .thread-card { background: rgba(5, 7, 6, 0.6); backdrop-filter: blur(10px); border: 1px solid #0f1711; border-radius: 14px; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .thread-card:hover { border-color: #1f4427; background: rgba(7, 13, 9, 0.8); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
@@ -75,7 +73,6 @@
         .stat-label { font-size: 10px; color: #384c3e; text-transform: uppercase; }
         .card-time { font-size: 12px; color: #4e6153; width: 110px; text-align: right; }
  
-        /* СТРАНИЦА РАЗРАБОТЧИКОВ И ЧАТА */
         .dev-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 20px; }
         .dev-card { background: #000000; border: 1px solid #0f1711; border-radius: 16px; padding: 30px; text-align: center; position: relative; overflow: hidden; }
         .dev-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #00ff66, #00ffcc); }
@@ -90,7 +87,6 @@
         .comment-card { background: #040605; border-left: 3px solid #00aa44; padding: 18px 24px; border-radius: 0 12px 12px 0; text-align: left; }
         .comment-text { font-size: 14px; color: #e2ebe3; margin-top: 6px; }
  
-        /* ОКНА И ДИАЛОГИ */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         .modal-window { background-color: #040605; border: 1px solid #142418; border-radius: 16px; width: 500px; max-width: 90%; padding: 35px; box-shadow: 0 0 50px rgba(0, 255, 102, 0.1); transform: scale(0.9) translateY(10px); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -115,7 +111,6 @@
         @keyframes sectionIn { to { opacity: 1; transform: translateY(0); } }
     </style>
  
-    <!-- НЕЗАВИСИМЫЙ СКРИПТ СКРЫТИЯ ЗАСТАВКИ -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
@@ -135,7 +130,6 @@
 </head>
 <body>
  
-    <!-- 1. АНИМАЦИОННЫЙ ЗАГРУЗЧИК (INTRO LOADER) -->
     <div id="loader-overlay">
         <div class="loader-title">DARK SCHOOL</div>
         <div class="loader-bar">
@@ -143,13 +137,11 @@
         </div>
     </div>
  
-    <!-- 2. СЕКУРНЫЙ ЭКРАН АВТОРИЗАЦИИ (TELEGRAM KEY) -->
     <div id="auth-overlay">
         <div class="auth-card">
             <div class="auth-logo"><i class="fa-solid fa-key"></i> ACCESS REQUIRED</div>
             <p class="auth-desc">Для обеспечения стопроцентной анонимности форум не хранит паролей. Получите временный сессионный ключ доступа в нашем официальном боте. Ключ привязывается к одному устройству.</p>
  
-            <!-- Ссылка на бота -->
             <a href="https://t.me" target="_blank" class="btn-tg">
                 <i class="fa-brands fa-telegram"></i> Получить ключ в Telegram
             </a>
@@ -159,7 +151,6 @@
         </div>
     </div>
  
-    <!-- 3. БОКОВАЯ НАВИГАЦИОННАЯ ПАНЕЛЬ ФОРУМА -->
     <nav class="sidebar" id="app-sidebar" style="display: none;">
         <div class="menu-logo" onclick="switchSection('control')">
             <i class="fa-solid fa-terminal"></i> DS_FORUM
@@ -186,10 +177,9 @@
  
         <button class="btn-suggest" id="openModalBtn">Создать тему</button>
     </nav>
-    <!-- 4. ГЛАВНАЯ ЗОНА КОНТЕНТА -->
+ 
     <main class="main-container" id="app-main" style="display: none;">
  
-        <!-- КАТЕГОРИИ ФОРУМА -->
         <section class="forum-section active" id="sec-control">
             <div class="section-header">
                 <div>
@@ -250,7 +240,6 @@
             <div class="threads-list" id="list-ege"></div>
         </section>
  
-        <!-- ВКЛАДКА: РАЗРАБОТЧИКИ -->
         <section class="forum-section" id="sec-devs">
             <div class="section-header">
                 <div>
@@ -272,7 +261,6 @@
             </div>
         </section>
  
-        <!-- СТРАНИЦА ОТКРЫТОЙ ТЕМЫ (ДИНАМИЧЕСКИЙ ТРЕД) -->
         <section class="forum-section" id="sec-view-thread">
             <div class="section-header">
                 <div>
@@ -296,7 +284,7 @@
         </section>
  
     </main>
-    <!-- 5. МОДАЛЬНОЕ ОКНО СОЗДАНИЯ ТЕМЫ -->
+ 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-window">
             <div class="modal-header">
@@ -321,12 +309,10 @@
         </div>
     </div>
  
-    <!-- 6. ИНТЕРАКТИВНЫЙ ДВИЖОК СИСТЕМЫ (FIREBASE MODULAR) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, push, onChildAdded, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-        // Конфиг Firebase — при необходимости замени databaseURL/authDomain на свои из консоли Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAkme2yEthTPY1ZDS_ijJzdRMdYmvk3zV4",
             authDomain: "dark-school.firebaseapp.com",
@@ -345,7 +331,7 @@
         } catch (e) { console.error("Firebase init error:", e); }
 
         /* =========================================================
-           DEVICE BINDING: 1 ключ = 1 устройство (deviceId + fingerprint)
+           DEVICE BINDING
            ========================================================= */
         const LS_DEVICE = 'ds_device_id';
         const LS_KEY    = 'ds_access_key';
@@ -407,9 +393,10 @@
             DEVICE_FP = await getFingerprint();
         }
 
+        // ИСПРАВЛЕНО: приоритет deviceId (стабильный), fingerprint — запасной вариант
         function deviceMatches(bound) {
             if (!bound || typeof bound !== 'object') return false;
-            return bound.deviceId === DEVICE_ID && bound.fingerprint === DEVICE_FP;
+            return bound.deviceId === DEVICE_ID || bound.fingerprint === DEVICE_FP;
         }
 
         function openForum() {
@@ -439,7 +426,6 @@
         window.addEventListener('load', () => {
             (async () => {
                 await initDevice();
-                // ждём, пока лоадер уедет (2.5с) + 0.6с затухание + 50мс показ auth
                 setTimeout(async () => {
                     if (await tryAutoLogin()) openForum();
                 }, 3300);
@@ -447,7 +433,7 @@
         });
 
         /* =========================================================
-           ВЕРИФИКАЦИЯ КЛЮЧА: 1 ключ = 1 устройство
+           ВЕРИФИКАЦИЯ КЛЮЧА
            ========================================================= */
         window.verifyAccessKey = async function() {
             if (!DEVICE_ID) await initDevice();
@@ -464,7 +450,6 @@
 
                 const val = snapshot.val();
 
-                // --- Ключ уже активирован (объект) ---
                 if (typeof val === 'object' && val !== null) {
                     if (deviceMatches(val)) {
                         localStorage.setItem(LS_KEY, inputKey);
@@ -475,7 +460,6 @@
                     return;
                 }
 
-                // --- Свежий ключ (true) — атомарно привязываем к устройству ---
                 if (val === true) {
                     const tx = await runTransaction(keyRef, (current) => {
                         if (current === true) {
@@ -487,7 +471,7 @@
                                 userAgent: (navigator.userAgent || '').slice(0, 200)
                             };
                         }
-                        return undefined; // кто-то успел раньше — прерываем транзакцию
+                        return undefined;
                     });
 
                     if (tx.committed) {
@@ -507,7 +491,7 @@
         }
 
         /* =========================================================
-           ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И ПЕРЕКЛЮЧЕНИЕ РАЗДЕЛОВ
+           ПЕРЕКЛЮЧЕНИЕ РАЗДЕЛОВ
            ========================================================= */
         window.currentTargetId = "";
         window.activeThreadId = "";
@@ -530,7 +514,7 @@
         }
 
         /* =========================================================
-           МОДАЛЬНОЕ ОКНО СОЗДАНИЯ ТЕМ
+           МОДАЛЬНОЕ ОКНО
            ========================================================= */
         const modalOverlay = document.getElementById('modalOverlay');
         const openModalBtn  = document.getElementById('openModalBtn');
@@ -577,7 +561,7 @@
         }
 
         /* =========================================================
-           ПРОСМОТР ТРЕДА + КОММЕНТАРИИ
+           ПРОСМОТР ТРЕДА
            ========================================================= */
         window.viewThread = function(category, threadId, title, author, content) {
             window.activeThreadId = threadId;
@@ -624,7 +608,7 @@
         }
 
         /* =========================================================
-           ЖИВАЯ СИНХРОНИЗАЦИЯ КАРТОЧЕК ПО КАТЕГОРИЯМ
+           СИНХРОНИЗАЦИЯ КАРТОЧЕК
            ========================================================= */
         const categories = ['control', 'self', 'practice', 'vpr', 'oge', 'ege'];
         categories.forEach(catId => {
@@ -657,4 +641,5 @@
         });
     </script>
 </body>
+</html>
 </html>
