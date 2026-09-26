@@ -147,7 +147,7 @@
     <div id="auth-overlay">
         <div class="auth-card">
             <div class="auth-logo"><i class="fa-solid fa-key"></i> ACCESS REQUIRED</div>
-            <p class="auth-desc">Для обеспечения стопроцентной анонимности форум не хранит паролей. Получите временный сессионный ключ доступа в нашем официальном боте.</p>
+            <p class="auth-desc">Для обеспечения стопроцентной анонимности форум не хранит паролей. Получите временный сессионный ключ доступа в нашем официальном боте. Ключ привязывается к одному устройству.</p>
  
             <!-- Ссылка на бота -->
             <a href="https://t.me" target="_blank" class="btn-tg">
@@ -323,11 +323,10 @@
  
     <!-- 6. ИНТЕРАКТИВНЫЙ ДВИЖОК СИСТЕМЫ (FIREBASE MODULAR) -->
     <script type="module">
-        // ИСПРАВЛЕНО: официальные URL Firebase v10 Modular SDK
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
- 
-        // ИСПРАВЛЕНО: корректный конфиг (проверь databaseURL и authDomain в консоли Firebase!)
+        import { getDatabase, ref, push, onChildAdded, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        // Конфиг Firebase — при необходимости замени databaseURL/authDomain на свои из консоли Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAkme2yEthTPY1ZDS_ijJzdRMdYmvk3zV4",
             authDomain: "dark-school.firebaseapp.com",
@@ -338,45 +337,208 @@
             appId: "1:99262532450:web:2234b9e4ee8cd98e7f7a3b",
             measurementId: "G-YSS0Z6JMZ1"
         };
- 
+
         let app, database;
         try {
             app = initializeApp(firebaseConfig);
             database = getDatabase(app);
-        } catch (e) {
-            console.error("Firebase init error:", e);
+        } catch (e) { console.error("Firebase init error:", e); }
+
+        /* =========================================================
+           DEVICE BINDING: 1 ключ = 1 устройство (deviceId + fingerprint)
+           ========================================================= */
+        const LS_DEVICE = 'ds_device_id';
+        const LS_KEY    = 'ds_access_key';
+
+        function generateDeviceId() {
+            return 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 11);
         }
- 
-        // Глобальные переменные состояния
+
+        async function sha256(str) {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function getFingerprint() {
+            const parts = [
+                navigator.userAgent || '',
+                navigator.language || '',
+                (navigator.languages || []).join(','),
+                screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
+                screen.availWidth + 'x' + screen.availHeight,
+                String(new Date().getTimezoneOffset()),
+                String(navigator.hardwareConcurrency || 0),
+                navigator.platform || '',
+                String(navigator.deviceMemory || 0),
+                String(navigator.maxTouchPoints || 0)
+            ];
+            try {
+                const c = document.createElement('canvas');
+                c.width = 220; c.height = 60;
+                const ctx = c.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = '14px "Arial"';
+                ctx.fillStyle = '#f60'; ctx.fillRect(125, 1, 62, 20);
+                ctx.fillStyle = '#069'; ctx.fillText('DarkSchool,fp!🌑', 2, 15);
+                ctx.fillStyle = 'rgba(102,204,0,0.7)';
+                ctx.fillText('DarkSchool,fp!🌑', 4, 17);
+                parts.push(c.toDataURL());
+            } catch { parts.push('no-canvas'); }
+            try {
+                const gl = document.createElement('canvas').getContext('webgl');
+                const dbg = gl && gl.getExtension('WEBGL_debug_renderer_info');
+                if (dbg) {
+                    parts.push(gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) || '');
+                    parts.push(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || '');
+                }
+            } catch { parts.push('no-webgl'); }
+            return await sha256(parts.join('||'));
+        }
+
+        let DEVICE_ID = null;
+        let DEVICE_FP = null;
+
+        async function initDevice() {
+            DEVICE_ID = localStorage.getItem(LS_DEVICE);
+            if (!DEVICE_ID) {
+                DEVICE_ID = generateDeviceId();
+                localStorage.setItem(LS_DEVICE, DEVICE_ID);
+            }
+            DEVICE_FP = await getFingerprint();
+        }
+
+        function deviceMatches(bound) {
+            if (!bound || typeof bound !== 'object') return false;
+            return bound.deviceId === DEVICE_ID && bound.fingerprint === DEVICE_FP;
+        }
+
+        function openForum() {
+            const auth = document.getElementById('auth-overlay');
+            auth.style.opacity = '0';
+            setTimeout(() => {
+                auth.style.display = 'none';
+                document.getElementById('app-sidebar').style.display = 'flex';
+                document.getElementById('app-main').style.display = 'flex';
+                switchSection('control');
+            }, 500);
+        }
+
+        async function tryAutoLogin() {
+            const savedKey = localStorage.getItem(LS_KEY);
+            if (!savedKey || !database) return false;
+            try {
+                const snap = await get(ref(database, `Keys/${savedKey}`));
+                if (!snap.exists()) { localStorage.removeItem(LS_KEY); return false; }
+                const val = snap.val();
+                if (deviceMatches(val)) return true;
+                localStorage.removeItem(LS_KEY);
+                return false;
+            } catch (e) { console.error(e); return false; }
+        }
+
+        window.addEventListener('load', () => {
+            (async () => {
+                await initDevice();
+                // ждём, пока лоадер уедет (2.5с) + 0.6с затухание + 50мс показ auth
+                setTimeout(async () => {
+                    if (await tryAutoLogin()) openForum();
+                }, 3300);
+            })();
+        });
+
+        /* =========================================================
+           ВЕРИФИКАЦИЯ КЛЮЧА: 1 ключ = 1 устройство
+           ========================================================= */
+        window.verifyAccessKey = async function() {
+            if (!DEVICE_ID) await initDevice();
+
+            const inputKey = document.getElementById('authKeyInput').value.trim();
+            if (!inputKey) { alert('Введите ключ!'); return; }
+            if (!database) { alert('База данных не инициализирована. Проверь конфиг Firebase.'); return; }
+
+            const keyRef = ref(database, `Keys/${inputKey}`);
+
+            try {
+                const snapshot = await get(keyRef);
+                if (!snapshot.exists()) { alert('ОШИБКА: Такого ключа нет в базе.'); return; }
+
+                const val = snapshot.val();
+
+                // --- Ключ уже активирован (объект) ---
+                if (typeof val === 'object' && val !== null) {
+                    if (deviceMatches(val)) {
+                        localStorage.setItem(LS_KEY, inputKey);
+                        openForum();
+                    } else {
+                        alert('Этот ключ уже активирован на другом устройстве.\nОдин ключ = одно устройство.');
+                    }
+                    return;
+                }
+
+                // --- Свежий ключ (true) — атомарно привязываем к устройству ---
+                if (val === true) {
+                    const tx = await runTransaction(keyRef, (current) => {
+                        if (current === true) {
+                            return {
+                                used: true,
+                                deviceId: DEVICE_ID,
+                                fingerprint: DEVICE_FP,
+                                boundAt: Date.now(),
+                                userAgent: (navigator.userAgent || '').slice(0, 200)
+                            };
+                        }
+                        return undefined; // кто-то успел раньше — прерываем транзакцию
+                    });
+
+                    if (tx.committed) {
+                        localStorage.setItem(LS_KEY, inputKey);
+                        openForum();
+                    } else {
+                        alert('Ключ только что был активирован другим устройством.');
+                    }
+                    return;
+                }
+
+                alert('Неизвестный формат ключа в базе.');
+            } catch (err) {
+                console.error(err);
+                alert('Критическая ошибка соединения с облаком Dark School.');
+            }
+        }
+
+        /* =========================================================
+           ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И ПЕРЕКЛЮЧЕНИЕ РАЗДЕЛОВ
+           ========================================================= */
         window.currentTargetId = "";
         window.activeThreadId = "";
         window.activeCategory = "";
         window.previousSectionId = "control";
- 
-        // Переключение основных разделов форума
+
         window.switchSection = function(targetSectionId) {
             document.querySelectorAll('.forum-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
- 
+
             const targetSection = document.getElementById(`sec-${targetSectionId}`);
             const targetNav = document.getElementById(`nav-${targetSectionId}`);
- 
+
             if (targetSection) targetSection.classList.add('active');
             if (targetNav) targetNav.classList.add('active');
- 
+
             if (targetSectionId !== 'view-thread') {
                 window.previousSectionId = targetSectionId;
             }
         }
- 
-        // Модальное окно создания топиков
+
+        /* =========================================================
+           МОДАЛЬНОЕ ОКНО СОЗДАНИЯ ТЕМ
+           ========================================================= */
         const modalOverlay = document.getElementById('modalOverlay');
-        const openModalBtn = document.getElementById('openModalBtn');
+        const openModalBtn  = document.getElementById('openModalBtn');
         const closeModalBtn = document.getElementById('closeModalBtn');
-        const categoryGrid = document.getElementById('categoryGrid');
-        const postForm = document.getElementById('postForm');
-        const modalTitle = document.getElementById('modalTitle');
- 
+        const categoryGrid  = document.getElementById('categoryGrid');
+        const postForm      = document.getElementById('postForm');
+        const modalTitle    = document.getElementById('modalTitle');
+
         openModalBtn.addEventListener('click', () => {
             modalTitle.innerText = "Выберите раздел создания темы";
             categoryGrid.style.display = "flex";
@@ -385,77 +547,49 @@
         });
         closeModalBtn.addEventListener('click', () => modalOverlay.classList.remove('active'));
         modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.remove('active'); });
- 
+
         window.openForm = function(targetId, displayName) {
             window.currentTargetId = targetId;
             modalTitle.innerText = `Новая тема в: ${displayName}`;
             categoryGrid.style.display = "none";
             postForm.classList.add('active');
         }
-        // ОТПРАВКА НОВОГО ТРЕДА НА СЕРВЕР (КАТЕГОРИЯ: Threads)
+
+        /* =========================================================
+           СОЗДАНИЕ ТРЕДА
+           ========================================================= */
         window.createThread = function(e) {
             e.preventDefault();
-            const titleText = document.getElementById('threadTitleInput').value;
+            const titleText   = document.getElementById('threadTitleInput').value;
             const contentText = document.getElementById('threadContentInput').value;
- 
+
             push(ref(database, 'Threads/' + window.currentTargetId), {
                 title: titleText,
                 content: contentText,
                 author: "anon_" + Math.floor(1000 + Math.random() * 9000),
                 time: "Только что"
             });
- 
+
             document.getElementById('threadTitleInput').value = "";
             document.getElementById('threadContentInput').value = "";
             modalOverlay.classList.remove('active');
             switchSection(window.currentTargetId);
         }
- 
-        // ПРОВЕРКА СЕССИОННОГО КЛЮЧА ИЗ ОБЛАКА FIREBASE (КАТЕГОРИЯ: Keys)
-        window.verifyAccessKey = async function() {
-            const inputKey = document.getElementById('authKeyInput').value.trim();
-            if (!inputKey) { alert('Введите ключ!'); return; }
- 
-            if (!database) {
-                alert('База данных не инициализирована. Проверь конфиг Firebase.');
-                return;
-            }
- 
-            try {
-                // Сверяем ввод с вашей точной структурой папки 'Keys' в Firebase
-                const snapshot = await get(ref(database, `Keys/${inputKey}`));
- 
-                if (snapshot.exists() && snapshot.val() === true) {
-                    // Ключ верный — плавно открываем шлюзы форума
-                    document.getElementById('auth-overlay').style.opacity = '0';
-                    setTimeout(() => {
-                        document.getElementById('auth-overlay').style.display = 'none';
-                        document.getElementById('app-sidebar').style.display = 'flex';
-                        document.getElementById('app-main').style.display = 'flex';
-                        switchSection('control');
-                    }, 500);
-                } else {
-                    alert('ОШИБКА РЕГИСТРАЦИИ: Данного ключа нет в базе ядра или его сессия истекла.');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Критическая ошибка соединения с облаком Dark School.');
-            }
-        }
- 
-        // ОТКРЫТИЕ ТЕМЫ (ЧТЕНИЕ ТЕКСТА И КОММЕНТАРИЕВ ДЛЯ ПОЛЬЗОВАТЕЛЯ)
+
+        /* =========================================================
+           ПРОСМОТР ТРЕДА + КОММЕНТАРИИ
+           ========================================================= */
         window.viewThread = function(category, threadId, title, author, content) {
             window.activeThreadId = threadId;
             window.activeCategory = category;
- 
+
             document.getElementById('openedThreadTitle').innerText = title;
-            document.getElementById('openedThreadMeta').innerText = `Раздел: ${category.toUpperCase()} | Автор: @${author}`;
+            document.getElementById('openedThreadMeta').innerText  = `Раздел: ${category.toUpperCase()} | Автор: @${author}`;
             document.getElementById('openedThreadContent').innerText = content;
- 
+
             const commentsContainer = document.getElementById('openedThreadComments');
             commentsContainer.innerHTML = "";
- 
-            // Слушаем новые комментарии к открытому треду в реальном времени
+
             onChildAdded(ref(database, `Comments/${threadId}`), (snapshot) => {
                 const comment = snapshot.val();
                 const commentCard = document.createElement('div');
@@ -466,39 +600,43 @@
                 `;
                 commentsContainer.appendChild(commentCard);
             });
- 
+
             switchSection('view-thread');
         }
- 
+
         window.closeThreadView = function() {
             switchSection(window.previousSectionId);
         }
- 
-        // АНОНИМНЫЕ ОТВЕТЫ/КОММЕНТАРИИ ВНУТРИ ТРЕДА
+
+        /* =========================================================
+           ОТПРАВКА КОММЕНТАРИЯ
+           ========================================================= */
         window.submitComment = function(e) {
             e.preventDefault();
             const commentText = document.getElementById('commentTextInput').value;
- 
+
             push(ref(database, `Comments/${window.activeThreadId}`), {
                 text: commentText,
                 author: "anon_" + Math.floor(1000 + Math.random() * 9000)
             });
- 
+
             document.getElementById('commentTextInput').value = "";
         }
- 
-        // ЖИВАЯ СИНХРОНИЗАЦИЯ КАРТОЧЕК ДЛЯ ВСЕХ КАТЕГОРИЙ (КАТЕГОРИЯ: Threads)
+
+        /* =========================================================
+           ЖИВАЯ СИНХРОНИЗАЦИЯ КАРТОЧЕК ПО КАТЕГОРИЯМ
+           ========================================================= */
         const categories = ['control', 'self', 'practice', 'vpr', 'oge', 'ege'];
         categories.forEach(catId => {
             onChildAdded(ref(database, 'Threads/' + catId), (snapshot) => {
                 const threadId = snapshot.key;
-                const thread = snapshot.val();
+                const thread   = snapshot.val();
                 const container = document.getElementById(`list-${catId}`);
- 
+
                 const card = document.createElement('div');
                 card.className = 'thread-card';
                 card.onclick = () => viewThread(catId, threadId, thread.title, thread.author, thread.content);
- 
+
                 card.innerHTML = `
                     <div class="card-left">
                         <div class="card-title">${thread.title}</div>
